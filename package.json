@@ -1,0 +1,20 @@
+{
+  "name": "react-react",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world"
+  },
+  "keywords": [
+    "BuckleScript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "bs-platform": "1.9.3"
+  },
+  "dependencies": {
+    "react-frp": "git://github.com/Denommus/react#bucklescript-files",
+    "reason-react": "^0.2.4"
+  }
+}
