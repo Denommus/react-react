@@ -1,1 +1,154 @@
-* TODO explain the project
+* ReactReact
+
+** Context
+
+   Reason is an OCaml-compatible language that compiles to JavaScript,
+   has JSX support, and was created by the same author of ReactJS. So,
+   of course, ReactJS was ported to reason.
+
+   ReactJS maps well with FRP (in JavaScript-land, we can use
+   [[https://github.com/acdlite/recompose][recompose]] and [[https://github.com/Reactive-Extensions/RxJS][RxJS]] to have a FRP-ish framework on top of React).
+
+   OCaml has had, for a long time, a FRP library that also happens to
+   be called [[http://erratique.ch/software/react][React]].
+
+   ReactJS and React can work together, just as RxJS and ReactJS can
+   by using recompose as a bridge.
+
+   ReactReact is the bridge that was missing.
+
+** Installation
+
+   You need to have a [[https://bucklescript.github.io/bucklescript/Manual.html#_get_started][BuckleScript project]] already setup.
+
+   If you use npm, in your project's directory:
+
+   #+BEGIN_SRC sh
+     npm install git+ssh://git@github.com/Denommus/react-react
+   #+END_SRC
+
+   Or if you use yarn:
+
+   #+BEGIN_SRC sh
+     yarn add git+ssh://git@github.com/Denommus/react-react
+   #+END_SRC
+
+   After that, edit ~bsconfig.json~ and include "react-frp",
+   "react-react", and "reason-react" to the "bs-dependencies"
+   array.
+
+** How to use it
+
+   Going through React's [[http://erratique.ch/software/react/doc/React][documentation]] is recommended past this point.
+   Since this library is so simple, most of the features are actually
+   from React. All the library does is to produce a valid ReactJS
+   component out of React's signals and events (at least for now, more
+   features are being planned).
+
+   It's really straightforward: there are two functions,
+   ~componentFromEvent~ and ~componentFromSignal~. The first will
+   create a component that updates whenever the event emits, the
+   second will create a component that updates whenever the signal
+   changes.
+
+   So, for instance, you could create a time counter like the
+   following, with signals:
+
+   #+BEGIN_SRC reason :exports code
+     open ReactFrp;
+
+     let initial = ref 0;
+
+     /* timeS is a signal that represents the current value, timeF is the
+        function that changes the signal's value */
+     let (timeS, timeF) = S.create !initial;
+
+     /* Increases the counter and updates the signal with the new value */
+     let timeIncrement () => {
+       initial := !initial + 1;
+       timeF !initial
+     };
+
+     /* Calls timeIncrement every second */
+     let timerId = Js.Global.setInterval timeIncrement 1000;
+
+     /* This is the actual signal that will produce the component. Notice
+        how it's produced by mapping the timeS signal to a component signal */
+     let vdomS =
+       S.map
+         eq::(fun _ _ => false)
+         (
+           fun time => {
+             let timeMessage = time == 1 ? "second" : "seconds";
+             let greeting = {j|You've spent $time $timeMessage on this page!|j};
+             <div> (ReasonReact.stringToElement greeting) </div>
+           }
+         )
+         timeS;
+
+     /* componentFromSignal will transform the signal into a real ReactJS
+        component! */
+     let component = ReactReact.componentFromSignal "Counter" vdomS;
+
+     let make _children => component;
+   #+END_SRC
+
+   Notice that I pass a function ~eq~ that always returns false to
+   ~S.map~. I do that because equality between
+   ~ReasonReact.reactElement~ is always true, and React only updates
+   the signal when it detects that it has changed. So I need to force
+   it to understand that it has changed (see [[http://erratique.ch/software/react/doc/React.html#sigeq][Equality]] in React's documentation).
+
+   This, of course, is the biggest disadvantage of the signal
+   approach: you need to worry about making sure the signal actually
+   updates.
+
+   But you can also create components with events, which will always
+   emit when a value arrives, no matter what:
+
+   #+BEGIN_SRC reason :exports code
+     open ReactFrp;
+
+     let initial = ref 0;
+
+     /* Events in react don't have a initial value, so I change a bit how I
+        update it so it starts with a 0 */
+     let (timeE, timeF) = E.create ();
+
+     let timeIncrement () => {
+       timeF !initial;
+       initial := !initial + 1
+     };
+
+     let timerId = Js.Global.setInterval timeIncrement 1000;
+
+     /* Now I can map it over vdomE, without needing to pass a equality
+        function */
+     let vdomE =
+       E.map
+         (
+           fun time => {
+             let timeMessage = time == 1 ? "second" : "seconds";
+             let greeting = {j|You've spent $time $timeMessage on this page!|j};
+             <div> (ReasonReact.stringToElement greeting) </div>
+           }
+         )
+         timeE;
+
+     /* componentFromEvent will transform the event into a real ReactJS
+        component! */
+     let component = ReactReact.componentFromEvent "Counter" vdomE;
+
+     let make _children => component;
+   #+END_SRC
+
+   Notice that events *don't* have an initial value. And that's the
+   biggest disadvantage of this approach. Whenever you need an initial
+   value for the page to render at first, ~componentFromEvent~ will
+   not be able to do the work, and you might see yourself seeing an
+   empty page (or component) and not understand why.
+
+   Fortunately, ReactJS knows nothing about signals or events, so you
+   can have signals-based components inside events-based components
+   and vice-versa. You may use whatever fits you the best on your
+   situation!
