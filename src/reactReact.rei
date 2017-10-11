@@ -1,24 +1,22 @@
-module ComponentFromSignal: {type action 'a; type state;};
+type action 'a;
 
-module ComponentFromEvent: {type action 'a; type state;};
+type state 'a;
 
 let componentFromSignal:
-  eq::(unit => unit => bool)? =>
-  string =>
-  ReactFrp.React.signal ReasonReact.reactElement =>
+  propsEq::('a => 'a => bool)? =>
   ReasonReact.componentSpec
-    ComponentFromSignal.state
-    ComponentFromSignal.state
+    (state 'a)
+    ReasonReact.stateless
     ReasonReact.noRetainedProps
     ReasonReact.noRetainedProps
-    (ComponentFromSignal.action ReasonReact.reactElement);
+    (action ReasonReact.reactElement) =>
+  'a =>
+  (ReactFrp.React.signal 'a => ReactFrp.React.signal ReasonReact.reactElement) =>
+  ReasonReact.componentSpec
+    (state 'a)
+    (state 'a)
+    ReasonReact.noRetainedProps
+    ReasonReact.noRetainedProps
+    (action ReasonReact.reactElement);
 
-let componentFromEvent:
-  string =>
-  ReactFrp.React.event ReasonReact.reactElement =>
-  ReasonReact.componentSpec
-    ComponentFromEvent.state
-    ComponentFromEvent.state
-    ReasonReact.noRetainedProps
-    ReasonReact.noRetainedProps
-    (ComponentFromEvent.action ReasonReact.reactElement);
+let emitEventToStream: ('a => 'b) => ReactEventRe.Form.t => 'b;
