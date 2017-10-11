@@ -4,14 +4,16 @@
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
-    "clean": "bsb -clean-world"
+    "clean": "bsb -clean-world",
+    "webpack": "webpack -w"
   },
   "keywords": [
     "BuckleScript"
   ],
   "license": "MIT",
   "devDependencies": {
-    "bs-platform": "1.9.3"
+    "bs-platform": "1.9.3",
+    "webpack": "^3.6.0"
   },
   "dependencies": {
     "react-frp": "git://github.com/Denommus/react#bucklescript-files",

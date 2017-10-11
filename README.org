@@ -45,17 +45,19 @@
    component out of React's signals and events (at least for now, more
    features are being planned).
 
-   It's really straightforward: there are two functions,
-   ~componentFromEvent~ and ~componentFromSignal~. The first will
-   create a component that updates whenever the event emits, the
-   second will create a component that updates whenever the signal
-   changes.
+   The heart of the library is the ~componentFromSignal~ function,
+   which takes:
+
+   1. a ~reducerComponent~
+   2. props (it can be ~unit~, or a single prop, or a tuple of props)
+   3. a function from signal of props to signal of
+      ~reactElement~
 
    So, for instance, you could create a time counter like the
-   following, with signals:
+   following:
 
    #+BEGIN_SRC reason :exports code
-     open ReactFrp;
+     open ReactFrp.React;
 
      let initial = ref 0;
 
@@ -73,8 +75,10 @@
      let timerId = Js.Global.setInterval timeIncrement 1000;
 
      /* This is the actual signal that will produce the component. Notice
-        how it's produced by mapping the timeS signal to a component signal */
-     let vdomS =
+        how it's produced by mapping the timeS signal to a component
+        signal. I ignore the argument because this specific component
+        doesn't have props */
+     let vdomS _ =>
        S.map
          eq::(fun _ _ => false)
          (
@@ -86,11 +90,14 @@
          )
          timeS;
 
-     /* componentFromSignal will transform the signal into a real ReactJS
-        component! */
-     let component = ReactReact.componentFromSignal "Counter" vdomS;
+     /* You need to create a component here, so it's only instanced once,
+     like ReasonReact's documentation recommends */
+     let component = ReactReact.reducerComponent "Counter";
 
-     let make _children => component;
+     /* componentFromSignal will apply the signal into a real ReactJS
+        component! The unit is passed because this component doesn't have
+        props */
+     let make _children => ReactReact.componentFromSignal component () vdomS;
    #+END_SRC
 
    Notice that I pass a function ~eq~ that always returns false to
@@ -99,56 +106,72 @@
    the signal when it detects that it has changed. So I need to force
    it to understand that it has changed (see [[http://erratique.ch/software/react/doc/React.html#sigeq][Equality]] in React's documentation).
 
-   This, of course, is the biggest disadvantage of the signal
-   approach: you need to worry about making sure the signal actually
-   updates.
+*** Passing props
 
-   But you can also create components with events, which will always
-   emit when a value arrives, no matter what:
+    To use props, just pass the value of the props as a tuple to ~componentFromSignal~
 
-   #+BEGIN_SRC reason :exports code
-     open ReactFrp;
+    #+BEGIN_SRC reason :exports code
+      open ReactFrp.React;
 
-     let initial = ref 0;
+      /* We'll have a component to show the user's input */
+      module ShowName = {
+        /* Now I won't ignore the first argument */
+        let vdomS propS =>
+          S.map
+            eq::(fun _ _ => false)
+            (
+              fun name =>
+                if (name != "") {
+                  let greeting = {j|Hello, $name!|j};
+                  <p> (ReasonReact.stringToElement greeting) </p>
+                } else {
+                  <p> (ReasonReact.stringToElement "Hello, unknown person!") </p>
+                }
+            )
+            propsS;
+        let component = ReasonReact.reducerComponent "ShowName";
+        /* Notice how I pass the name prop to componentFromSignal */
+        let make ::name _children => ReasonReact.componentFromSignal component name vdomS;
+      };
 
-     /* Events in react don't have a initial value, so I change a bit how I
-        update it so it starts with a 0 */
-     let (timeE, timeF) = E.create ();
+      /* This time we won't update the signal automatically, instead we'll
+         use user input */
+      let (nameS, nameF) = S.create "";
 
-     let timeIncrement () => {
-       timeF !initial;
-       initial := !initial + 1
-     };
+      let vdomS =
+        S.map
+          eq::(fun _ _ => false)
+          (
+            fun name =>
+              /* emitEventToStream will send the text value of an event to
+                 the function passed as argument */
+              <div>
+                <input _type="text" onChange=(ReactReact.emitEventToStream nameF) />
+                <ShowName name />
+              </div>
+          )
+          nameS;
 
-     let timerId = Js.Global.setInterval timeIncrement 1000;
+      let component = ReactReact.componentFromSignal "Input" vdomS;
 
-     /* Now I can map it over vdomE, without needing to pass a equality
-        function */
-     let vdomE =
-       E.map
-         (
-           fun time => {
-             let timeMessage = time == 1 ? "second" : "seconds";
-             let greeting = {j|You've spent $time $timeMessage on this page!|j};
-             <div> (ReasonReact.stringToElement greeting) </div>
-           }
-         )
-         timeE;
+      let make _children => component;
+    #+END_SRC
 
-     /* componentFromEvent will transform the event into a real ReactJS
-        component! */
-     let component = ReactReact.componentFromEvent "Counter" vdomE;
+** Running the examples
+   The [[file:src/example.re][example file]] has both examples working together. You can read
+   the source to see the library in action.
 
-     let make _children => component;
+   To run it, run in a terminal
+
+   #+BEGIN_SRC sh
+     yarn install
+     yarn start
    #+END_SRC
 
-   Notice that events *don't* have an initial value. And that's the
-   biggest disadvantage of this approach. Whenever you need an initial
-   value for the page to render at first, ~componentFromEvent~ will
-   not be able to do the work, and you might see yourself seeing an
-   empty page (or component) and not understand why.
+   And in a separate terminal window
 
-   Fortunately, ReactJS knows nothing about signals or events, so you
-   can have signals-based components inside events-based components
-   and vice-versa. You may use whatever fits you the best on your
-   situation!
+   #+BEGIN_SRC sh
+     yarn webpack
+   #+END_SRC
+
+   Then just open the [[file:src/index.html][index.html]] file in your browser of choice
