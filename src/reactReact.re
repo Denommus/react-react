@@ -26,7 +26,7 @@ let componentFromSignal
   initialState: fun () => {
     propsF: ref None,
     subscription: ref None,
-    vdom: ReasonReact.stringToElement ""
+    vdom: ReasonReact.arrayToElement [||]
   },
   reducer: fun action state =>
     switch action {
