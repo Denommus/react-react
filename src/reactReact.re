@@ -32,12 +32,10 @@ let componentFromSignal
     switch action {
     | Tick x => ReasonReact.Update {...state, vdom: x}
     },
-  willReceiveProps: fun self =>
-    switch !self.state.propsF {
-    | Some f =>
-      f props;
-      self.state
-    | None => self.state
+  willUpdate: fun oldAndNewSelf =>
+    switch !oldAndNewSelf.newSelf.state.propsF {
+    | Some f => f props
+    | None => ()
     },
   didMount: fun {state, reduce} => {
     let (propsS, propsF) = S.create eq::propsEq props;
