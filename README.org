@@ -175,3 +175,53 @@
    #+END_SRC
 
    Then just open the [[file:src/index.html][index.html]] file in your browser of choice
+
+** Wishlist
+
+*** A functor interface to generate the components
+
+    Since the components are quite similar to each other, as can be
+    seen in the example file, it would be nice if the user could do
+    something like:
+
+    #+BEGIN_SRC reason
+      module FooComponent =
+        CreateComponent {
+          type props = {name: string};
+          let name = "FooComponent";
+          let vdomS propS =>
+            S.map
+              eq::(fun _ _ => false)
+              (
+                fun {name} =>
+                  if (name != "") {
+                    let greeting = {j|Hello, $name!|j};
+                    <p> (ReasonReact.stringToElement greeting) </p>
+                  } else {
+                    <p> (ReasonReact.stringToElement "Hello, unknown person!") </p>
+                  }
+              )
+              propsS;
+        };
+    #+END_SRC
+
+    And then the component would be used like
+
+    #+BEGIN_SRC reason
+      <FooComponent name="bar" />
+    #+END_SRC
+
+    That seems a bit more readable, right? Sadly, it can't be done as
+    of now because the ~make~ function takes props as named
+    parameters, so I can't really generalize it with a functor.
+
+*** Promises to events conversion
+
+    Promises are basically less powerful events, so it would be nice
+    if the library included a function to convert from the first to
+    the second. That's feasible, and will be delivered in a future release.
+
+*** Other utility functions
+
+    Some additional composition functions that aren't on React could
+    be present.
