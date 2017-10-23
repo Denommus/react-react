@@ -47,6 +47,7 @@ let componentFromSignal
   },
   willUnmount: fun {state} => {
     state.subscription := None;
+    state.propsF := None;
     ()
   },
   render: fun {state} => state.vdom
