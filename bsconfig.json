@@ -3,6 +3,7 @@
 {
   "name": "react-react",
   "reason": {"react-jsx" : 2},
+  "refmt": 3,
   "version": "0.1.0",
   "sources": [
     {

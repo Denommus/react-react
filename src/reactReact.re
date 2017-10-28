@@ -1,82 +1,83 @@
 open ReactFrp.React;
 
-type action 'a =
-  | Tick 'a;
+type action('a) =
+  | Tick('a);
 
-type state 'a = {
-  propsF: ref (option (step::step? => 'a => unit)),
-  subscription: ref (option (signal unit)),
+type state('a) = {
+  propsF: ref(option(((~step: step=?, 'a) => unit))),
+  subscription: ref(option(signal(unit))),
   vdom: ReasonReact.reactElement
 };
 
-let componentFromSignal
-    ::propsEq=(==)
+let componentFromSignal =
     (
+      ~propsEq=(==),
       component:
-        ReasonReact.componentSpec
-          (state 'a)
-          ReasonReact.stateless
-          ReasonReact.noRetainedProps
-          ReasonReact.noRetainedProps
-          (action ReasonReact.reactElement)
-    )
-    props
-    propsToVdom => {
+        ReasonReact.componentSpec(
+          state('a),
+          ReasonReact.stateless,
+          ReasonReact.noRetainedProps,
+          ReasonReact.noRetainedProps,
+          action(ReasonReact.reactElement)
+        ),
+      props,
+      propsToVdom
+    ) => {
   ...component,
-  initialState: fun () => {
-    propsF: ref None,
-    subscription: ref None,
-    vdom: ReasonReact.arrayToElement [||]
+  initialState: () => {
+    propsF: ref(None),
+    subscription: ref(None),
+    vdom: ReasonReact.arrayToElement([||])
   },
-  reducer: fun action state =>
+  reducer: (action, state) =>
     switch action {
-    | Tick x => ReasonReact.Update {...state, vdom: x}
+    | Tick(x) => ReasonReact.Update({...state, vdom: x})
     },
-  willUpdate: fun oldAndNewSelf =>
-    switch !oldAndNewSelf.newSelf.state.propsF {
-    | Some f => f props
+  willUpdate: (oldAndNewSelf) =>
+    switch oldAndNewSelf.newSelf.state.propsF^ {
+    | Some(f) => f(props)
     | None => ()
     },
-  didMount: fun {state, reduce} => {
-    let (propsS, propsF) = S.create eq::propsEq props;
-    state.propsF := Some propsF;
-    let vdomS = propsToVdom propsS;
-    state.subscription :=
-      Some (S.map (fun newVdom => reduce (fun _event => Tick newVdom) ()) vdomS);
+  didMount: ({state, reduce}) => {
+    let (propsS, propsF) = S.create(~eq=propsEq, props);
+    state.propsF := Some(propsF);
+    let vdomS = propsToVdom(propsS);
+    state.subscription := Some(S.map((newVdom) => reduce((_event) => Tick(newVdom), ()), vdomS));
     ReasonReact.NoUpdate
   },
-  willUnmount: fun {state} => {
+  willUnmount: ({state}) => {
     state.subscription := None;
     state.propsF := None;
     ()
   },
-  render: fun {state} => state.vdom
+  render: ({state}) => state.vdom
 };
 
-let valueFromEvent ev => (ev |> ReactEventRe.Form.target |> ReactDOMRe.domElementToObj)##value;
+let valueFromEvent = (ev) => (ev |> ReactEventRe.Form.target |> ReactDOMRe.domElementToObj)##value;
 
-let emitEventToStream signalF ev => valueFromEvent ev |> signalF;
+let emitEventToStream = (signalF, ev) => valueFromEvent(ev) |> signalF;
 
 module Utils = {
-  let eventFromPromise promise => {
+  let eventFromPromise = (promise) => {
     open Js.Result;
     open Js.Promise;
-    let (promiseE, promiseF) = E.create ();
-    promise |>
-    then_ (
-      fun x => {
-        promiseF (Ok x);
-        promise
-      }
-    ) |>
-    catch (
-      fun x => {
-        promiseF (Error x);
-        promise
-      }
-    ) |> ignore;
+    let (promiseE, promiseF) = E.create();
+    promise
+    |> then_(
+         (x) => {
+           promiseF(Ok(x));
+           promise
+         }
+       )
+    |> catch(
+         (x) => {
+           promiseF(Error(x));
+           promise
+         }
+       )
+    |> ignore;
     promiseE
   };
-  let eventJoin ee => E.match E.never ee;
-  let eventBind e f => eventJoin (E.map f e);
+  let eventJoin = (ee) => E.switch_(E.never, ee);
+  let eventBind = (e, f) => eventJoin(E.map(f, e));
 };
