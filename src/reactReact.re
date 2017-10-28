@@ -56,3 +56,27 @@ let componentFromSignal
 let valueFromEvent ev => (ev |> ReactEventRe.Form.target |> ReactDOMRe.domElementToObj)##value;
 
 let emitEventToStream signalF ev => valueFromEvent ev |> signalF;
+
+module Utils = {
+  let eventFromPromise promise => {
+    open Js.Result;
+    open Js.Promise;
+    let (promiseE, promiseF) = E.create ();
+    promise |>
+    then_ (
+      fun x => {
+        promiseF (Ok x);
+        promise
+      }
+    ) |>
+    catch (
+      fun x => {
+        promiseF (Error x);
+        promise
+      }
+    ) |> ignore;
+    promiseE
+  };
+  let eventJoin ee => E.match E.never ee;
+  let eventBind e f => eventJoin (E.map f e);
+};

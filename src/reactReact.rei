@@ -20,3 +20,10 @@ let componentFromSignal:
     (action ReasonReact.reactElement);
 
 let emitEventToStream: ('a => 'b) => ReactEventRe.Form.t => 'b;
+
+module Utils: {
+  open ReactFrp.React;
+  let eventFromPromise: Js.Promise.t 'a => event (Js.Result.t 'a Js.Promise.error);
+  let eventJoin: event (event 'a) => event 'a;
+  let eventBind: event 'a => ('a => event 'b) => event 'b;
+};
