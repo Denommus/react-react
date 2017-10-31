@@ -4,7 +4,8 @@ type action('a) =
   | Tick('a);
 
 type state('a) = {
-  propsF: ref(option(((~step: step=?, 'a) => unit))),
+  propsF: (~step: step=?, 'a) => unit,
+  propsS: signal('a),
   subscription: ref(option(signal(unit))),
   vdom: ReasonReact.reactElement
 };
@@ -25,29 +26,22 @@ let componentFromSignal =
     ) => {
   ...component,
   initialState: () => {
-    propsF: ref(None),
-    subscription: ref(None),
-    vdom: ReasonReact.arrayToElement([||])
+    let (propsS, propsF) = S.create(~eq=propsEq, props);
+    {propsF, propsS, subscription: ref(None), vdom: ReasonReact.arrayToElement([||])}
   },
   reducer: (action, state) =>
     switch action {
     | Tick(x) => ReasonReact.Update({...state, vdom: x})
     },
-  willUpdate: (oldAndNewSelf) =>
-    switch oldAndNewSelf.newSelf.state.propsF^ {
-    | Some(f) => f(props)
-    | None => ()
-    },
+  willUpdate: ({newSelf}) => newSelf.state.propsF(props),
   didMount: ({state, reduce}) => {
-    let (propsS, propsF) = S.create(~eq=propsEq, props);
-    state.propsF := Some(propsF);
-    let vdomS = propsToVdom(propsS);
-    state.subscription := Some(S.map((newVdom) => reduce((_event) => Tick(newVdom), ()), vdomS));
+    let vdomS = propsToVdom(state.propsS);
+    let reduceState = (newVdom, _event) => Tick(newVdom);
+    state.subscription := Some(S.map((newVdom) => reduce(reduceState(newVdom), ()), vdomS));
     ReasonReact.NoUpdate
   },
   willUnmount: ({state}) => {
     state.subscription := None;
-    state.propsF := None;
     ()
   },
   render: ({state}) => state.vdom
