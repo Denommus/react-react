@@ -1,7 +1,7 @@
 open ReactFrp.React;
 
-type action('a) =
-  | Tick('a);
+type action =
+  | Tick(ReasonReact.reactElement);
 
 type state('a) = {
   propsF: (~step: step=?, 'a) => unit,
@@ -19,7 +19,7 @@ let componentFromSignal =
           ReasonReact.stateless,
           ReasonReact.noRetainedProps,
           ReasonReact.noRetainedProps,
-          action(ReasonReact.reactElement)
+          action
         ),
       props,
       propsToVdom

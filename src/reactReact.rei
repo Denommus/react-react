@@ -1,4 +1,4 @@
-type action('a);
+type action;
 
 type state('a);
 
@@ -10,7 +10,7 @@ let componentFromSignal:
       ReasonReact.stateless,
       ReasonReact.noRetainedProps,
       ReasonReact.noRetainedProps,
-      action(ReasonReact.reactElement)
+      action
     ),
     'a,
     ReactFrp.React.signal('a) => ReactFrp.React.signal(ReasonReact.reactElement)
@@ -20,7 +20,7 @@ let componentFromSignal:
     state('a),
     ReasonReact.noRetainedProps,
     ReasonReact.noRetainedProps,
-    action(ReasonReact.reactElement)
+    action
   );
 
 let emitEventToStream: ('a => 'b, ReactEventRe.Form.t) => 'b;
