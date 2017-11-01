@@ -1,8 +1,5 @@
 open ReactFrp.React;
 
-type action =
-  | Tick(ReasonReact.reactElement);
-
 type state('a) = {
   propsF: (~step: step=?, 'a) => unit,
   propsS: signal('a),
@@ -19,7 +16,7 @@ let componentFromSignal =
           ReasonReact.stateless,
           ReasonReact.noRetainedProps,
           ReasonReact.noRetainedProps,
-          action
+          ReasonReact.reactElement
         ),
       props,
       propsToVdom
@@ -29,14 +26,11 @@ let componentFromSignal =
     let (propsS, propsF) = S.create(~eq=propsEq, props);
     {propsF, propsS, subscription: ref(None), vdom: ReasonReact.arrayToElement([||])}
   },
-  reducer: (action, state) =>
-    switch action {
-    | Tick(x) => ReasonReact.Update({...state, vdom: x})
-    },
+  reducer: (vdom, state) => ReasonReact.Update({...state, vdom}),
   willUpdate: ({newSelf}) => newSelf.state.propsF(props),
   didMount: ({state, reduce}) => {
     let vdomS = propsToVdom(state.propsS);
-    let reduceState = (newVdom, _event) => Tick(newVdom);
+    let reduceState = (newVdom, _event) => newVdom;
     state.subscription := Some(S.map((newVdom) => reduce(reduceState(newVdom), ()), vdomS));
     ReasonReact.NoUpdate
   },
