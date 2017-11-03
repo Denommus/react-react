@@ -41,11 +41,9 @@ let componentFromSignal =
   render: ({state}) => state.vdom
 };
 
-let valueFromEvent = (ev) => (ev |> ReactEventRe.Form.target |> ReactDOMRe.domElementToObj)##value;
-
-let emitEventToStream = (signalF, ev) => valueFromEvent(ev) |> signalF;
-
 module Utils = {
+  let valueFromEvent = (ev) => (ev |> ReactEventRe.Form.target |> ReactDOMRe.domElementToObj)##value;
+  let emitEventToStream = (signalF, ev) => valueFromEvent(ev) |> signalF;
   let eventFromPromise = (promise) => {
     open Js.Result;
     open Js.Promise;
@@ -66,6 +64,8 @@ module Utils = {
     |> ignore;
     promiseE
   };
-  let eventJoin = (ee) => E.switch_(E.never, ee);
-  let eventBind = (e, f) => eventJoin(E.map(f, e));
+  module Event = {
+    let join = (ee) => E.switch_(E.never, ee);
+    let bind = (e, f) => join(E.map(f, e));
+  };
 };

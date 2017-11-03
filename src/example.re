@@ -1,5 +1,7 @@
 open ReactFrp.React;
 
+open ReactReact;
+
 module ShowName = {
   let vdomS = (propsS) =>
     S.map(
@@ -14,7 +16,7 @@ module ShowName = {
       propsS
     );
   let component = ReasonReact.reducerComponent("ShowName");
-  let make = (~name, _children) => ReactReact.componentFromSignal(component, name, vdomS);
+  let make = (~name, _children) => componentFromSignal(component, name, vdomS);
 };
 
 module Timer = {
@@ -36,7 +38,7 @@ module Timer = {
       timeS
     );
   let component = ReasonReact.reducerComponent("Timer");
-  let make = (_children) => ReactReact.componentFromSignal(component, (), vdomS);
+  let make = (_children) => componentFromSignal(component, (), vdomS);
 };
 
 module Input = {
@@ -46,14 +48,14 @@ module Input = {
       ~eq=(_, _) => false,
       (name) =>
         <div>
-          <input _type="text" onChange=(ReactReact.emitEventToStream(nameF)) />
+          <input _type="text" onChange=(Utils.emitEventToStream(nameF)) />
           <ShowName name />
           <Timer />
         </div>,
       nameS
     );
   let component = ReasonReact.reducerComponent("Input");
-  let make = (_children) => ReactReact.componentFromSignal(component, (), vdomS);
+  let make = (_children) => componentFromSignal(component, (), vdomS);
 };
 
 ReactDOMRe.renderToElementWithId(<Input />, "index");
