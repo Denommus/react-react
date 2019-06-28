@@ -4,3 +4,5 @@ npm-debug.log
 /lib/
 /node_modules/
 bundledOutputs/
+*.bs.js
+.bsb.lock

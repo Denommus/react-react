@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   entry: {
-    example: './lib/js/src/example.js',
+    example: './src/example.bs.js',
   },
   output: {
     path: path.join(__dirname, "bundledOutputs"),

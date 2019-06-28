@@ -1,61 +1,61 @@
 open ReactFrp.React;
-
 open ReactReact;
+open ReactReact.Utils;
 
 module ShowName = {
-  let vdomS = (propsS) =>
+  let vdomS = propsS =>
     S.map(
       ~eq=(_, _) => false,
-      (name) =>
+      name =>
         if (name != "") {
           let greeting = {j|Hello, $name!|j};
-          <p> (ReasonReact.stringToElement(greeting)) </p>
+          <p> {ReasonReact.string(greeting)} </p>;
         } else {
-          <p> (ReasonReact.stringToElement("Hello, unknown person!")) </p>
+          <p> {ReasonReact.string("Hello, unknown person!")} </p>;
         },
-      propsS
+      propsS,
     );
-  let component = ReasonReact.reducerComponent("ShowName");
-  let make = (~name, _children) => componentFromSignal(component, name, vdomS);
+  [@react.component]
+  let make = (~name) => componentFromSignal(vdomS, name);
 };
 
 module Timer = {
-  let initial = ref(0);
-  let (timeS, timeF) = S.create(initial^);
+  let counter = ref(0);
+  let (timeS, timeF) = S.create(counter^);
   let timeIncrement = () => {
-    initial := initial^ + 1;
-    timeF(initial^)
+    counter := counter^ + 1;
+    timeF(counter^);
   };
   let timerId = Js.Global.setInterval(timeIncrement, 1000);
-  let vdomS = (_) =>
+  let vdomS = _ =>
     S.map(
       ~eq=(_, _) => false,
-      (time) => {
+      time => {
         let timeMessage = time == 1 ? "second" : "seconds";
-        let greeting = {j|You've spent $time $timeMessage on this page!|j};
-        <div> (ReasonReact.stringToElement(greeting)) </div>
+        let message = {j|You've spent $time $timeMessage on this page!|j};
+        <div> {ReasonReact.string(message)} </div>;
       },
-      timeS
+      timeS,
     );
-  let component = ReasonReact.reducerComponent("Timer");
-  let make = (_children) => componentFromSignal(component, (), vdomS);
+  [@react.component]
+  let make = () => componentFromSignal(vdomS, ());
 };
 
 module Input = {
   let (nameS, nameF) = S.create("");
-  let vdomS = (_) =>
+  let vdomS = _ =>
     S.map(
       ~eq=(_, _) => false,
-      (name) =>
+      name =>
         <div>
-          <input _type="text" onChange=(Utils.emitEventToStream(nameF)) />
+          <input type_="text" onChange={ev => emitEventToSignal(nameF, ev)} />
           <ShowName name />
           <Timer />
         </div>,
-      nameS
+      nameS,
     );
-  let component = ReasonReact.reducerComponent("Input");
-  let make = (_children) => componentFromSignal(component, (), vdomS);
+  [@react.component]
+  let make = () => componentFromSignal(vdomS, ());
 };
 
 ReactDOMRe.renderToElementWithId(<Input />, "index");
