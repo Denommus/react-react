@@ -39,8 +39,10 @@ module Utils: {
 
      signalF: a function that emits a value to a signal or to an event
 
+     It's called ToStream because it supports both signals and events
+
    */
-  let emitEventToSignal: ('a => unit, ReactEvent.Form.t) => unit;
+  let emitEventToStream: ('a => unit, ReactEvent.Form.t) => unit;
   /*
 
      Converts a Js.Promise.t into an event.

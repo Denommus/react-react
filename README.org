@@ -139,10 +139,10 @@
         S.map(
           ~eq=(_, _) => false,
           (name) =>
-            /* emitEventToSignal will send the text value of an event to
+            /* emitEventToStream will send the text value of an event to
                the function passed as argument */
             <div>
-              <input type_="text" onChange=(ReactReact.Utils.emitEventToSignal(nameF)) />
+              <input type_="text" onChange=(ReactReact.Utils.emitEventToStream(nameF)) />
               <ShowName name />
             </div>,
           nameS

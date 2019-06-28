@@ -48,7 +48,7 @@ module Input = {
       ~eq=(_, _) => false,
       name =>
         <div>
-          <input type_="text" onChange={ev => emitEventToSignal(nameF, ev)} />
+          <input type_="text" onChange={ev => emitEventToStream(nameF, ev)} />
           <ShowName name />
           <Timer />
         </div>,
