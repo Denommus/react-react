@@ -1,55 +1,24 @@
-/*
-
-   the state of the generated component. Doesn't need to be directly
-   manipulated, so it's opaque
-
- */
-type state('a);
+open ReactFrp.React;
 
 /*
-
    Generates a ReasonReact component from a ReactFrp signal.
 
    propsEq: overrides the equality function used to detect changes on
    the props. When a change is detected the props signal is updated
    accordingly.
 
-   component: the reducerComponent that will actually be rendered.
-   Needs to be created outside of the make function for performance
-   reasons
-
-   props: the current value of the props (as received by make). It's
-   usually a tuple, but you can create a custom type for it. The value
-   will be fed to a signal.
-
    propsToVdom: a function that takes the props signal and returns a
    reactElement signal. The reactElement signal is the actual vdom you
    want to be rendered.
 
+   props: the current value of the props (as received by make). It's
+   usually a tuple, but you can create a custom type for it. The value
+   will be fed to a signal.
  */
 let componentFromSignal:
-  (
-    ~propsEq: ('a, 'a) => bool=?,
-    ReasonReact.componentSpec(
-      state('a),
-      ReasonReact.stateless,
-      ReasonReact.noRetainedProps,
-      ReasonReact.noRetainedProps,
-      ReasonReact.reactElement
-    ),
-    'a,
-    ReactFrp.React.signal('a) => ReactFrp.React.signal(ReasonReact.reactElement)
-  ) =>
-  ReasonReact.componentSpec(
-    state('a),
-    state('a),
-    ReasonReact.noRetainedProps,
-    ReasonReact.noRetainedProps,
-    ReasonReact.reactElement
-  );
+  (signal('a) => signal(React.element), 'a) => React.element;
 
 module Utils: {
-  open ReactFrp.React;
   /*
 
      Emits the value of a ReasonReact event into a signal or an event,
@@ -71,13 +40,14 @@ module Utils: {
      signalF: a function that emits a value to a signal or to an event
 
    */
-  let emitEventToStream: ('a => unit, ReactEventRe.Form.t) => unit;
+  let emitEventToSignal: ('a => unit, ReactEvent.Form.t) => unit;
   /*
 
      Converts a Js.Promise.t into an event.
 
    */
-  let eventFromPromise: Js.Promise.t('a) => event(Js.Result.t('a, Js.Promise.error));
+  let eventFromPromise:
+    Js.Promise.t('a) => event(Belt.Result.t('a, Js.Promise.error));
   module Event: {
     /*
 
