@@ -13,6 +13,7 @@ let componentFromSignal = (propsToVdom, props) => {
       {signal: propsS, setSignal: propsF};
     });
   propsPair.setSignal(props);
+  /* I need to store the signal in a variable, otherwise it will be garbage collected */
   let (_watcher, _) =
     React.useState(() => {
       let vdomS = propsToVdom(propsPair.signal);
