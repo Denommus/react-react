@@ -24,13 +24,13 @@
    If you use npm, in your project's directory:
 
    #+BEGIN_SRC sh
-     npm install git+ssh://git@github.com:Denommus/react-react.git
+     npm install react-react
    #+END_SRC
 
    Or if you use yarn:
 
    #+BEGIN_SRC sh
-     yarn add git+ssh://git@github.com:Denommus/react-react.git
+     yarn add react-react
    #+END_SRC
 
    After that, edit ~bsconfig.json~ and include "react-frp",
