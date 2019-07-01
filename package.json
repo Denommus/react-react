@@ -1,5 +1,5 @@
 {
-  "name": "react-react",
+  "name": "@denommus/react-react",
   "version": "1.0.0",
   "scripts": {
     "build": "bsb -make-world",

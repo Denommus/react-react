@@ -30,7 +30,7 @@
    Or if you use yarn:
 
    #+BEGIN_SRC sh
-     yarn add react-react
+     yarn add @denommus/react-react
    #+END_SRC
 
    After that, edit ~bsconfig.json~ and include "react-frp",
