@@ -6,28 +6,18 @@ type signalPair('a) = {
 };
 
 let componentFromSignal = (propsToVdom, props) => {
-  let (propsPairOption, setPropsS) = React.useState(() => None);
   let (element, setElement) = React.useState(() => React.null);
-  let (watcher, setWatcher) = React.useState(() => None);
-  switch (propsPairOption) {
-  | None =>
-    let (propsS, propsF) = S.create(props);
-    setPropsS(_ => Some({signal: propsS, setSignal: propsF}));
-    ();
-  | Some(propsPair) =>
-    propsPair.setSignal(props);
-    if (watcher == None) {
-      setWatcher(_ =>
-        Some(
-          S.map(
-            newElement => setElement(_ => newElement),
-            propsToVdom(propsPair.signal),
-          ),
-        )
-      );
-      ();
-    };
-  };
+  let (propsPair, _) =
+    React.useState(() => {
+      let (propsS, propsF) = S.create(props);
+      {signal: propsS, setSignal: propsF};
+    });
+  propsPair.setSignal(props);
+  let (_watcher, _) =
+    React.useState(() => {
+      let vdomS = propsToVdom(propsPair.signal);
+      S.map(newElement => setElement(_ => newElement), vdomS);
+    });
   element;
 };
 
