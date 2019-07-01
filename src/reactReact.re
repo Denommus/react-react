@@ -22,8 +22,8 @@ let componentFromSignal = (propsToVdom, props) => {
 };
 
 module Utils = {
-  let valueFromEvent = ev => (ev |> ReactEvent.Form.target)##value;
-  let emitEventToStream = (signalF, ev) => valueFromEvent(ev) |> signalF;
+  let valueFromEvent = ev => ReactEvent.Form.target(ev)##value;
+  let emitEventToStream = (streamF, ev) => ev |> valueFromEvent |> streamF;
   let eventFromPromise = promise => {
     open Belt.Result;
     open Js.Promise;
