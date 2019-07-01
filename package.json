@@ -1,13 +1,13 @@
 {
   "name": "react-react",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "webpack -w",
-    "webpack:production": "NODE_ENV=production webpack",
+    "webpack": "webpack --mode=development -w",
+    "webpack:production": "NODE_ENV=production webpack --mode=production",
     "server": "webpack-dev-server"
   },
   "keywords": [
