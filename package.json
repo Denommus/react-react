@@ -14,17 +14,22 @@
     "BuckleScript"
   ],
   "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "reason-react": ">=0.7.0"
+  },
   "devDependencies": {
     "bs-platform": "^5.0.4",
     "html-webpack-plugin": "^3.2.0",
     "webpack": "^4.0.1",
     "webpack-cli": "^3.1.1",
-    "webpack-dev-server": "^3.1.8"
-  },
-  "dependencies": {
-    "react-frp": "git://github.com/Denommus/react#bucklescript-files",
+    "webpack-dev-server": "^3.1.8",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "reason-react": ">=0.7.0"
+  },
+  "dependencies": {
+    "react-frp": "git://github.com/Denommus/react#bucklescript-files"
   }
 }

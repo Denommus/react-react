@@ -1,6 +1,4 @@
-
 # ReactReact
-
 
 ## What it is
 
@@ -19,14 +17,13 @@ This library provides the function `componentFromSignal`, which is
 like recompose's `componentFromStream`. With this library, you
 have a bridge between React and ReasonReact.
 
-
 ## Installation
 
 You need to have a [BuckleScript project](https://bucklescript.github.io/bucklescript/Manual.html#_get_started) already setup.
 
 If you use npm, in your project's directory:
 
-    npm install react-react
+    npm install @denommus/react-react
 
 Or if you use yarn:
 
@@ -35,7 +32,6 @@ Or if you use yarn:
 After that, edit `bsconfig.json` and include "react-frp",
 "react-react", and "reason-react" to the "bs-dependencies"
 array.
-
 
 ## How to use it
 
@@ -55,22 +51,22 @@ So, for instance, you could create a time counter like the
 following:
 
     open ReactFrp.React;
-    
+
     let initial = ref(0);
-    
+
     /* timeS is a signal that represents the current value, timeF is the
        function that changes the signal's value */
-    let (timeS, timeF) = S.create(!initial);
-    
+    let (timeS, timeF) = S.create(initial^);
+
     /* Increases the counter and updates the signal with the new value */
     let timeIncrement = () => {
-      initial := !initial + 1;
-      timeF(!initial)
+      initial := initial^ + 1;
+      timeF(initial^)
     };
-    
+
     /* Calls timeIncrement every second */
     let timerId = Js.Global.setInterval(timeIncrement, 1000);
-    
+
     /* This is the actual signal function that will produce the component.
        Notice how it's produced by mapping the timeS signal to a component
        signal. I ignore the argument because this specific component
@@ -87,7 +83,7 @@ following:
         ),
         timeS
     );
-    
+
     /* componentFromSignal will apply the signal into a real ReactJS
        component! The unit is passed because this component doesn't have
        props */
@@ -101,14 +97,13 @@ the signal when it detects that it has changed. So I need to force
 it to understand that it has changed (see [Equality](http://erratique.ch/software/react/doc/React.html#sigeq) in React's
 documentation).
 
-
 ### Passing props
 
 To use props, just pass the value of the props as a tuple to
 `componentFromSignal`
 
     open ReactFrp.React;
-    
+
     /* We'll have a component to show the user's input */
     module ShowName = {
       /* Now I won't ignore the first argument */
@@ -128,11 +123,11 @@ To use props, just pass the value of the props as a tuple to
       [@react.component]
       let make = (~name) => ReasonReact.componentFromSignal(vdomS, name);
     };
-    
+
     /* This time we won't update the signal automatically, instead we'll
        use user input */
     let (nameS, nameF) = S.create("");
-    
+
     let vdomS =
       S.map(
         ~eq=(_, _) => false,
@@ -145,10 +140,9 @@ To use props, just pass the value of the props as a tuple to
           </div>,
         nameS
       );
-    
+
     [@react.component]
     let make = () => ReactReact.componentFromSignal(vdomS, ());
-
 
 ### Working with side-effects
 
@@ -159,21 +153,18 @@ anything similar, you can always subscribe to it with a
 
     let subscriber = S.map((vdom) => Js.log(vdom), vdomS);
 
-
 ### Using the result of promises
 
 Promises are, for every purpose, less powerful events, and you can
 convert promises to events. If you're using a library that returns
 promises (like [bs-fetch](https://github.com/reasonml-community/bs-fetch)), you can call `Utils.eventFromPromise` on
-the result. Then you can use it as an `event(Js.Result.t ('a,
-    Js.Promise.error))`. This allows you to compose signals out of
+the result. Then you can use it as an `event(Js.Result.t ('a, Js.Promise.error))`. This allows you to compose signals out of
 promises, and eventually even create components out of these
 signals.
 
 It uses `Belt.Result.t` because every promise might fail and throw
 an error instead. ReactReact catches that error and returns it in
 the result type instead.
-
 
 ### Other util functions
 
@@ -191,7 +182,6 @@ to take an `event(event('a))` and produce an `event('a)`.
 `bind` is similar to Promise's `then_`. It allows you to compose
 events
 
-
 ## Running the examples
 
 The [example file](src/example.re) has both examples working together. You can read
@@ -208,9 +198,7 @@ And in a separate terminal window
 
 Then just open the [index.html](src/index.html) file in your browser of choice
 
-
 ## Wishlist
-
 
 ### A functor interface to generate the components
 
@@ -245,7 +233,6 @@ That seems a bit more readable, right? Sadly, it can't be done as
 of now because the `make` function takes props as named
 parameters, so I can't really generalize it with a functor.
 
-
 ## Disclaimer
 
 I don't actually like using the term "FRP" for things like React or
@@ -260,4 +247,3 @@ more appropriated terminology is needed.
 But the terminology got popular, so it's more intuitive for most
 people if I just describe this library as a FRP bridge for
 ReasonReact.
-
