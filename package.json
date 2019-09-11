@@ -30,6 +30,6 @@
     "reason-react": ">=0.7.0"
   },
   "dependencies": {
-    "react-frp": "git://github.com/Denommus/react#bucklescript-files"
+    "react-frp": "git://github.com/Denommus/react.git#bucklescript-files"
   }
 }
