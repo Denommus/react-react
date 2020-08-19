@@ -6,19 +6,35 @@ type signalPair('a) = {
 };
 
 let componentFromSignal = (propsToVdom, props) => {
+  /* Starts with an empty element. That is, renders nothing */
   let (element, setElement) = React.useState(() => React.null);
-  let (propsPair, _) =
-    React.useState(() => {
-      let (propsS, propsF) = S.create(props);
-      {signal: propsS, setSignal: propsF};
-    });
-  propsPair.setSignal(props);
-  /* I need to store the signal in a variable, otherwise it will be garbage collected */
-  let (_watcher, _) =
-    React.useState(() => {
-      let vdomS = propsToVdom(propsPair.signal);
-      S.map(newElement => setElement(_ => newElement), vdomS);
-    });
+
+  /* I'm now using useRef because it allows me to clean up resources */
+  let propsPair = React.useRef(None);
+  let watcher = React.useRef(None);
+  React.useEffect0(() => {
+    let (propsS, propsF) = S.create(props);
+    propsPair.current = Some({signal: propsS, setSignal: x => propsF(x)});
+    let vdomS = propsToVdom(propsS);
+    /* I need to store the watcher in a variable, otherwise it can be gc'd
+       and the signal(element) will stop updating the state */
+    watcher.current =
+      Some(S.map(newElement => setElement(_ => newElement), vdomS));
+    Some(
+      () => {
+        /* Cleaning up resources */
+        Belt.Option.map(propsPair.current, x =>
+          S.stop(~strong=true, x.signal)
+        )
+        |> ignore;
+        Belt.Option.map(watcher.current, S.stop(~strong=true)) |> ignore;
+        propsPair.current = None;
+        watcher.current = None;
+      },
+    );
+  });
+  /* This is where the props passed by parameter become a signal */
+  Belt.Option.map(propsPair.current, x => x.setSignal(props)) |> ignore;
   element;
 };
 
