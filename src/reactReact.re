@@ -12,6 +12,7 @@ let componentFromSignal = (propsToVdom, props) => {
   /* I'm now using useRef because it allows me to clean up resources */
   let propsPair = React.useRef(None);
   let watcher = React.useRef(None);
+
   React.useEffect0(() => {
     let (propsS, propsF) = S.create(props);
     propsPair.current = Some({signal: propsS, setSignal: x => propsF(x)});
@@ -33,8 +34,13 @@ let componentFromSignal = (propsToVdom, props) => {
       },
     );
   });
-  /* This is where the props passed by parameter become a signal */
-  Belt.Option.map(propsPair.current, x => x.setSignal(props)) |> ignore;
+
+  React.useEffect1(() => {
+    /* This is where the props passed by parameter become a signal */
+    Belt.Option.map(propsPair.current, x => x.setSignal(props)) |> ignore;
+    None
+  }, [|props|]);
+
   element;
 };
 
