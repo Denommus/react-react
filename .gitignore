@@ -8,3 +8,4 @@ bundledOutputs/
 *.bs.js
 .bsb.lock
 *.md
+yarn.lock
