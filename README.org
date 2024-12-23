@@ -2,5 +2,6 @@
 
 Since ReasonML now uses melange and not bucklescript, and Erratique's
 React is not compatible with melange, this library can no longer be
-used. I'm working on a replacement using Janestreet's incremental
-library.
+used.
+
+I'm investigating FRP libraries compatible with melange.
